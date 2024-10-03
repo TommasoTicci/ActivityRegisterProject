@@ -19,6 +19,8 @@ public:
 
     bool canAcceptActivity (const QDate &date);
 
+    bool isValidInput ();
+
     int getActivitiesPerDay (const QDate &date);
 
     void addActivity ();

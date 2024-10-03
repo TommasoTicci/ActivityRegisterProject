@@ -77,22 +77,30 @@ void ActivityRegister::onNewActivityButtonClicked() {
 }
 
 void ActivityRegister::onAddButtonClicked() {
-    if (canAcceptActivity(tmp_date)) {
-        addActivity();
-        auto *MsgBox = new QMessageBox(this);
-        MsgBox->setWindowTitle("Success");
-        MsgBox->setAttribute(Qt::WA_DeleteOnClose, true);
-        std::string test = "Added [" + std::to_string(activities.size())+ "]";  //Testing (to be removed)
-        MsgBox->setText(test.c_str());                                          //Testing (to be removed)
-        MsgBox->show();
-        NewActivityDialog->close();
+    if (isValidInput()) {
+        if (canAcceptActivity(tmp_date)) {
+            addActivity();
+            auto *MsgBox = new QMessageBox(this);
+            MsgBox->setWindowTitle("Success");
+            MsgBox->setAttribute(Qt::WA_DeleteOnClose, true);
+            std::string test = "Added [" + std::to_string(activities.size()) + "]";  //Testing (to be removed)
+            MsgBox->setText(test.c_str());                                          //Testing (to be removed)
+            MsgBox->show();
+            NewActivityDialog->close();
+        } else {
+            auto *MsgBox = new QMessageBox(this);
+            MsgBox->setWindowTitle("Error");
+            MsgBox->setAttribute(Qt::WA_DeleteOnClose, true);
+            MsgBox->setText("Too many activities");
+            MsgBox->show();
+        }
     }
     else
     {
         auto *MsgBox = new QMessageBox(this);
         MsgBox->setWindowTitle("Error");
         MsgBox->setAttribute ( Qt::WA_DeleteOnClose, true );
-        MsgBox->setText("Too many activities");
+        MsgBox->setText("Invalid input");
         MsgBox->show();
     }
 }
@@ -137,4 +145,15 @@ int ActivityRegister::getActivitiesPerDay(const QDate &date) {
 bool ActivityRegister::canAcceptActivity(const QDate &date)
 {
     return ActivityRegister::getActivitiesPerDay(date) < maxActivitiesPerDay;
+}
+
+bool ActivityRegister::isValidInput () {
+    bool isValid = true;
+    if (tmp_description.empty()) {
+        isValid = false;
+    }
+    if (tmp_startTime > tmp_endTime) {
+        isValid = false;
+    }
+    return isValid;
 }
