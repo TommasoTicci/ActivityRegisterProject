@@ -17,9 +17,17 @@ class ActivityRegister : public QWidget  {
 public:
     ActivityRegister ();
 
+private slots:
+    void onNewActivityButtonClicked();
+
 private:
     std::vector<Activity> activities;
     int maxActivitiesPerDay = 10;
+    std::string tmp_description;
+    QTime tmp_startTime;
+    QTime tmp_endTime;
+    QDate tmp_date;
+    QDialog *NewActivityDialog;
     QDateEdit *registerDate;
     QScrollArea *scrollRegisterArea;
 };
