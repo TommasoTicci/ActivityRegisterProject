@@ -1,10 +1,8 @@
 #include <QApplication>
-#include <QPushButton>
+#include "ActivityRegister.h"
 
 int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
-    QPushButton button("PLACEHOLDER", nullptr);
-    button.resize(400, 200);
-    button.show();
+    ActivityRegister reg;
     return QApplication::exec();
 }
