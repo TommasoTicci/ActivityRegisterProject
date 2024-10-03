@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.29)
 project(ActivityRegisterProject)
 
-set(VERSION 0.1)
+set(VERSION 0.2)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
@@ -17,7 +17,9 @@ find_package(Qt6 COMPONENTS
         Widgets
         REQUIRED)
 
-add_executable(ActivityRegisterProject main.cpp)
+add_executable(ActivityRegisterProject main.cpp
+        Activity.cpp
+        Activity.h)
 
 target_link_libraries(ActivityRegisterProject
         Qt::Core
