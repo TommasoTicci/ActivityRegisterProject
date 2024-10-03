@@ -1,13 +1,10 @@
-cmake_minimum_required(VERSION 3.29)
+cmake_minimum_required(VERSION 3.5)
 project(ActivityRegisterProject)
 
-set(VERSION 0.3.3)
+set(VERSION 0.4)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
 
 set(CMAKE_PREFIX_PATH "C:\\Qt\\6.5.1\\mingw_64")
 
@@ -16,6 +13,8 @@ find_package(Qt6 COMPONENTS
         Gui
         Widgets
         REQUIRED)
+
+include_directories(${Qt6Widgets_INCLUDE_DIRS})
 
 add_executable(ActivityRegisterProject main.cpp
         Activity.cpp

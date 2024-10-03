@@ -7,27 +7,36 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QDateEdit>
-#include <QLayoutItem>
 #include <QMessageBox>
+#include <QLayoutItem>
+
 
 ActivityRegister::ActivityRegister ()
 {
     setFixedSize(800, 600);
-    show();
     setWindowTitle("Activity Register");
     registerDate = new QDateEdit(QDate::currentDate(),this);
     registerDate->setGeometry(320, 10, 160, 30);
     registerDate->show();
-    auto *addActivityButton = new QPushButton("Add activity", this);
-    addActivityButton->setGeometry(350, 50, 100, 30);
-    addActivityButton->show();
-    auto *programmerLabel = new QLabel("by Tommaso Ticci", this);
-    programmerLabel->setGeometry(10, 570, 200, 30);
-    programmerLabel->show();
     scrollRegisterArea = new QScrollArea(this);
     scrollRegisterArea->setGeometry(100,90 ,600,400);
     scrollRegisterArea->show();
+    addActivityButton = new QPushButton("Add activity", this);
+    addActivityButton->setGeometry(350, 50, 100, 30);
+    addActivityButton->show();
+    programmerLabel = new QLabel("by Tommaso Ticci", this);
+    programmerLabel->setGeometry(10, 570, 200, 30);
+    programmerLabel->show();
+    activityLabel = new QLabel("No activities", scrollRegisterArea);
+    activityLabel->setGeometry(10, 10, 400, 20);
+    auto * Font = new QFont(activityLabel->font());
+    Font->setPointSize(10);
+    activityLabel->setFont(*Font);
+    delete Font;
+    activityLabel->show();
     QObject::connect(addActivityButton, &QPushButton::clicked, this, &ActivityRegister::onNewActivityButtonClicked);
+    QObject::connect(registerDate, &QDateEdit::dateChanged, this, &ActivityRegister::refreshRegister);
+    show();
 }
 
 void ActivityRegister::onNewActivityButtonClicked() {
@@ -76,6 +85,39 @@ void ActivityRegister::onNewActivityButtonClicked() {
     connect(dateArea, &QDateEdit::dateChanged, this, &ActivityRegister::onDateChanged);
 }
 
+void ActivityRegister::refreshRegister() {
+    delete scrollRegisterArea;
+    scrollRegisterArea = new QScrollArea(this);
+    scrollRegisterArea->setGeometry(100,90 ,600,400);
+    scrollRegisterArea->show();
+    int i = 0;
+    for (auto it = activities.begin(); it != activities.end(); ++it)
+    {
+        if (it->getDate() == registerDate->date())
+        {
+            i++;
+            std::string s = "Description: "+it->getDescription()+"     Inizio: "+std::to_string(it->getStartTime().hour())+":"+std::to_string(it->getStartTime().minute()) +" Fine: "+std::to_string(it->getEndTime().hour())+":"+std::to_string(it->getEndTime().minute());
+            activityLabel = new QLabel(QString::fromStdString(s), scrollRegisterArea);
+            activityLabel->setGeometry(10, 10 + 40 * (i-1), 350, 20);
+            auto * Font = new QFont(activityLabel->font());
+            Font->setPointSize(10);
+            activityLabel->setFont(*Font);
+            delete Font;
+            activityLabel->show();
+        }
+    }
+    if (i==0)
+    {
+        activityLabel = new QLabel("No activities", scrollRegisterArea);
+        activityLabel->setGeometry(10, 10, 400, 20);
+        auto * Font = new QFont(activityLabel->font());
+        Font->setPointSize(10);
+        activityLabel->setFont(*Font);
+        delete Font;
+        activityLabel->show();
+    }
+}
+
 void ActivityRegister::onAddButtonClicked() {
     if (isValidInput()) {
         if (canAcceptActivity(tmp_date)) {
@@ -83,8 +125,6 @@ void ActivityRegister::onAddButtonClicked() {
             auto *MsgBox = new QMessageBox(this);
             MsgBox->setWindowTitle("Success");
             MsgBox->setAttribute(Qt::WA_DeleteOnClose, true);
-            std::string test = "Added [" + std::to_string(activities.size()) + "]";  //Testing (to be removed)
-            MsgBox->setText(test.c_str());                                          //Testing (to be removed)
             MsgBox->show();
             NewActivityDialog->close();
         } else {
@@ -108,6 +148,7 @@ void ActivityRegister::onAddButtonClicked() {
 void ActivityRegister::addActivity() {
     Activity newActivity(tmp_description, tmp_startTime, tmp_endTime, tmp_date);
     activities.push_back(newActivity);
+    ActivityRegister::refreshRegister();
 }
 
 void ActivityRegister::onCancelButtonClicked () {

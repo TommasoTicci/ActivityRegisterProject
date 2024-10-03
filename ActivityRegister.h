@@ -7,13 +7,14 @@
 
 #include "Activity.h"
 #include <vector>
-#include <QPushButton>
-#include <QLabel>
 #include <QWidget>
+#include <QPushButton>
+#include <QTime>
 #include <QDateEdit>
 #include <QScrollArea>
+#include <QLabel>
 
-class ActivityRegister : public QWidget  {
+class ActivityRegister : public QWidget {
 public:
     ActivityRegister ();
 
@@ -27,6 +28,8 @@ public:
 
 private slots:
     void onNewActivityButtonClicked();
+
+    void refreshRegister ();
 
     void onAddButtonClicked ();
 
@@ -47,9 +50,12 @@ private:
     QTime tmp_startTime;
     QTime tmp_endTime;
     QDate tmp_date;
-    QDialog *NewActivityDialog;
+    QDialog *NewActivityDialog = nullptr;
     QDateEdit *registerDate;
     QScrollArea *scrollRegisterArea;
+    QLabel *programmerLabel;
+    QLabel *activityLabel;
+    QPushButton *addActivityButton;
 };
 
 
