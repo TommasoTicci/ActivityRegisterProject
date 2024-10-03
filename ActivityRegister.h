@@ -17,8 +17,26 @@ class ActivityRegister : public QWidget  {
 public:
     ActivityRegister ();
 
+    bool canAcceptActivity (const QDate &date);
+
+    int getActivitiesPerDay (const QDate &date);
+
+    void addActivity ();
+
 private slots:
     void onNewActivityButtonClicked();
+
+    void onAddButtonClicked ();
+
+    void onCancelButtonClicked ();
+
+    void onDescriptionChanged (const QString &text);
+
+    void onStartTimeChanged (QTime value);
+
+    void onEndTimeChanged (QTime value);
+
+    void onDateChanged (QDate value);
 
 private:
     std::vector<Activity> activities;
