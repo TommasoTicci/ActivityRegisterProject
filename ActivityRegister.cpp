@@ -94,16 +94,19 @@ void ActivityRegister::refreshRegister() {
         if (it->getDate() == registerDate->date())
         {
             i++;
-            std::string s = "Description: "+it->getDescription()+"     Inizio: "+std::to_string(it->getStartTime().hour())+":"+std::to_string(it->getStartTime().minute()) +" Fine: "+std::to_string(it->getEndTime().hour())+":"+std::to_string(it->getEndTime().minute());
-            activityLabel = new QLabel(QString::fromStdString(s), scrollRegisterArea);
+            activityLabel = new QLabel(QString::fromStdString(setCorrectDescriptionFormat(it->getDescription())), scrollRegisterArea);
             activityLabel->setGeometry(10, 10 + 40 * (i-1), 350, 20);
+            timeLabel = new QLabel(QString::fromStdString(setCorrectHourFormat(it->getStartTime(),it->getEndTime())), scrollRegisterArea);
+            timeLabel->setGeometry(350, 10 + 40 * (i-1), 200, 20);
             auto * Font = new QFont(activityLabel->font());
             Font->setPointSize(10);
             activityLabel->setFont(*Font);
+            timeLabel->setFont(*Font);
             deleteButton = new QPushButton("X", scrollRegisterArea);
             deleteButton->setGeometry(560, 10 + 40 * (i-1), 20, 20);
             connect (deleteButton, &QPushButton::clicked, this, [this, i]{onDeleteButtonClicked(i-1);});
             activityLabel->show();
+            timeLabel->show();
             deleteButton->show();
             delete Font;
         }
@@ -120,6 +123,44 @@ void ActivityRegister::refreshRegister() {
     }
 }
 
+std::string ActivityRegister::setCorrectDescriptionFormat (const std::string &description) {
+    std::string new_description;
+    if (description.length()>32) {
+        new_description = description.substr(0, 32);
+    }
+    else {
+        new_description = description;
+    }
+    return new_description;
+}
+
+std::string ActivityRegister::setCorrectHourFormat (const QTime &startTime, const QTime &endTime) {
+    std::string s;
+    if(startTime.minute()<10)
+    {
+        if(endTime.minute()<10)
+        {
+            s = "Start: "+std::to_string(startTime.hour())+":0"+std::to_string(startTime.minute()) +"   End: "+std::to_string(endTime.hour())+":0"+std::to_string(endTime.minute());
+        }
+        else
+        {
+            s = "Start: "+std::to_string(startTime.hour())+":0"+std::to_string(startTime.minute()) +"   End: "+std::to_string(endTime.hour())+":"+std::to_string(endTime.minute());
+        }
+    }
+    else
+    {
+        if(endTime.minute()<10)
+        {
+            s = "Start: "+std::to_string(startTime.hour())+":"+std::to_string(startTime.minute()) +"   End: "+std::to_string(endTime.hour())+":0"+std::to_string(endTime.minute());
+        }
+        else
+        {
+            s = "Start: "+std::to_string(startTime.hour())+":"+std::to_string(startTime.minute()) +"   End: "+std::to_string(endTime.hour())+":"+std::to_string(endTime.minute());
+        }
+    }
+    return s;
+}
+
 void ActivityRegister::onAddButtonClicked() {
     if (isValidInput()) {
         if (canAcceptActivity(tmp_date)) {
@@ -127,7 +168,7 @@ void ActivityRegister::onAddButtonClicked() {
             auto *MsgBox = new QMessageBox(this);
             MsgBox->setWindowTitle("Success");
             MsgBox->setAttribute(Qt::WA_DeleteOnClose, true);
-            MsgBox->setText("Activity added");
+            MsgBox->setText("Added");
             MsgBox->show();
             NewActivityDialog->close();
         } else {

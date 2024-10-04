@@ -26,6 +26,10 @@ public:
 
     void addActivity ();
 
+    std::string setCorrectDescriptionFormat (const std::string &description);
+
+    std::string setCorrectHourFormat (const QTime &startTime, const QTime &endTime);
+
 private slots:
     void onNewActivityButtonClicked();
 
@@ -56,7 +60,8 @@ private:
     QDateEdit *registerDate;
     QScrollArea *scrollRegisterArea;
     QLabel *programmerLabel;
-    QLabel *activityLabel;
+    QLabel *activityLabel= nullptr;
+    QLabel *timeLabel= nullptr;
     QPushButton *addActivityButton;
     QPushButton *deleteButton = nullptr;
 };
