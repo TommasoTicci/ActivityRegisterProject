@@ -8,8 +8,6 @@
 #include <QLineEdit>
 #include <QDateEdit>
 #include <QMessageBox>
-#include <QLayoutItem>
-
 
 ActivityRegister::ActivityRegister ()
 {
@@ -32,8 +30,8 @@ ActivityRegister::ActivityRegister ()
     auto * Font = new QFont(activityLabel->font());
     Font->setPointSize(10);
     activityLabel->setFont(*Font);
-    delete Font;
     activityLabel->show();
+    delete Font;
     QObject::connect(addActivityButton, &QPushButton::clicked, this, &ActivityRegister::onNewActivityButtonClicked);
     QObject::connect(registerDate, &QDateEdit::dateChanged, this, &ActivityRegister::refreshRegister);
     show();
@@ -102,8 +100,12 @@ void ActivityRegister::refreshRegister() {
             auto * Font = new QFont(activityLabel->font());
             Font->setPointSize(10);
             activityLabel->setFont(*Font);
-            delete Font;
+            deleteButton = new QPushButton("X", scrollRegisterArea);
+            deleteButton->setGeometry(560, 10 + 40 * (i-1), 20, 20);
+            connect (deleteButton, &QPushButton::clicked, this, [this, i]{onDeleteButtonClicked(i-1);});
             activityLabel->show();
+            deleteButton->show();
+            delete Font;
         }
     }
     if (i==0)
@@ -113,8 +115,8 @@ void ActivityRegister::refreshRegister() {
         auto * Font = new QFont(activityLabel->font());
         Font->setPointSize(10);
         activityLabel->setFont(*Font);
-        delete Font;
         activityLabel->show();
+        delete Font;
     }
 }
 
@@ -125,6 +127,7 @@ void ActivityRegister::onAddButtonClicked() {
             auto *MsgBox = new QMessageBox(this);
             MsgBox->setWindowTitle("Success");
             MsgBox->setAttribute(Qt::WA_DeleteOnClose, true);
+            MsgBox->setText("Activity added");
             MsgBox->show();
             NewActivityDialog->close();
         } else {
@@ -153,6 +156,21 @@ void ActivityRegister::addActivity() {
 
 void ActivityRegister::onCancelButtonClicked () {
     delete NewActivityDialog;
+}
+
+void ActivityRegister::onDeleteButtonClicked(int index) {
+    for (auto it = activities.begin(); it != activities.end() && index != -1; ++it)
+    {
+        if (it->getDate() == registerDate->date())
+        {
+            index--;
+            if (index == -1)
+            {
+                activities.erase(it);
+                ActivityRegister::refreshRegister();
+            }
+        }
+    }
 }
 
 void ActivityRegister::onDescriptionChanged (const QString &text) {

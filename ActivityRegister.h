@@ -35,6 +35,8 @@ private slots:
 
     void onCancelButtonClicked ();
 
+    void onDeleteButtonClicked (int index);
+
     void onDescriptionChanged (const QString &text);
 
     void onStartTimeChanged (QTime value);
@@ -56,6 +58,7 @@ private:
     QLabel *programmerLabel;
     QLabel *activityLabel;
     QPushButton *addActivityButton;
+    QPushButton *deleteButton = nullptr;
 };
 
 
