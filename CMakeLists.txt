@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(ActivityRegisterProject)
 
-set(VERSION 0.4.2)
+set(VERSION 0.5)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
@@ -16,17 +16,26 @@ find_package(Qt6 COMPONENTS
 
 include_directories(${Qt6Widgets_INCLUDE_DIRS})
 
-add_executable(ActivityRegisterProject main.cpp
-        Activity.cpp
+add_subdirectory(Test)
+
+set(SOURCE_FILES
         Activity.h
+        Activity.cpp
+        ActivityRegister.h
         ActivityRegister.cpp
-        ActivityRegister.h)
+)
+
+# Main executable
+add_executable(ActivityRegisterProject main.cpp)
 
 target_link_libraries(ActivityRegisterProject
+        core
         Qt::Core
         Qt::Gui
         Qt::Widgets
 )
+
+add_library(core ${SOURCE_FILES})
 
 if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     set(DEBUG_SUFFIX)
