@@ -195,6 +195,16 @@ void ActivityRegister::addActivity() {
     ActivityRegister::refreshRegister();
 }
 
+void ActivityRegister::addActivityManual(const std::string &description, const QTime &startTime, const QTime &endTime,const QDate &date) {
+    std::string new_description = description;
+    QTime new_startTime = startTime;
+    QTime new_endTime = endTime;
+    QDate new_date = date;
+    Activity newActivity(new_description, new_startTime, new_endTime, new_date);
+    activities.push_back(newActivity);
+    ActivityRegister::refreshRegister();
+}
+
 void ActivityRegister::onCancelButtonClicked () {
     delete NewActivityDialog;
 }
@@ -247,7 +257,7 @@ bool ActivityRegister::canAcceptActivity(const QDate &date)
     return ActivityRegister::getActivitiesPerDay(date) < maxActivitiesPerDay;
 }
 
-bool ActivityRegister::isValidInput () {
+bool ActivityRegister::isValidInput() {
     bool isValid = true;
     if (tmp_description.empty()) {
         isValid = false;
@@ -256,4 +266,23 @@ bool ActivityRegister::isValidInput () {
         isValid = false;
     }
     return isValid;
+}
+
+bool ActivityRegister::isValidInputManual (const std::string &description, const QTime &startTime, const QTime &endTime, const QDate &date) {
+    bool isValid = true;
+    if (description.empty()) {
+        isValid = false;
+    }
+    if (startTime > endTime) {
+        isValid = false;
+    }
+    return isValid;
+}
+
+std::vector<Activity>* ActivityRegister::getActivities() {
+    return &activities;
+}
+
+int ActivityRegister::getMaxActivitiesPerDay() {
+    return maxActivitiesPerDay;
 }

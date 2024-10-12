@@ -20,17 +20,25 @@ public:
 
     bool canAcceptActivity (const QDate &date);
 
-    bool isValidInput ();
-
     int getActivitiesPerDay (const QDate &date);
 
-    void addActivity ();
+    void addActivityManual (const std::string &description, const QTime &startTime, const QTime &endTime, const QDate &date);
+
+    bool isValidInputManual (const std::string &description, const QTime &startTime, const QTime &endTime, const QDate &date);
 
     std::string setCorrectDescriptionFormat (const std::string &description);
 
     std::string setCorrectHourFormat (const QTime &startTime, const QTime &endTime);
 
+    std::vector<Activity>* getActivities();
+
+    int getMaxActivitiesPerDay();
+
 private slots:
+    void addActivity ();
+
+    bool isValidInput ();
+
     void onNewActivityButtonClicked();
 
     void refreshRegister ();
