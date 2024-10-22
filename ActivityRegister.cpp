@@ -104,7 +104,7 @@ void ActivityRegister::refreshRegister() {
             timeLabel->setFont(*Font);
             deleteButton = new QPushButton("X", scrollRegisterArea);
             deleteButton->setGeometry(560, 10 + 40 * (i-1), 20, 20);
-            connect (deleteButton, &QPushButton::clicked, this, [this, i]{onDeleteButtonClicked(i-1);});
+            connect(deleteButton, &QPushButton::clicked, this, [this, i]{onDeleteButtonClicked(i-1);});
             activityLabel->show();
             timeLabel->show();
             deleteButton->show();
@@ -162,9 +162,11 @@ std::string ActivityRegister::setCorrectHourFormat (const QTime &startTime, cons
 }
 
 void ActivityRegister::onAddButtonClicked() {
-    if (isValidInput()) {
+    try {
+        Activity newActivity(tmp_description, tmp_startTime, tmp_endTime, tmp_date);
+
         if (canAcceptActivity(tmp_date)) {
-            addActivity();
+            addActivity(newActivity);
             auto *MsgBox = new QMessageBox(this);
             MsgBox->setWindowTitle("Success");
             MsgBox->setAttribute(Qt::WA_DeleteOnClose, true);
@@ -178,25 +180,23 @@ void ActivityRegister::onAddButtonClicked() {
             MsgBox->setText("Too many activities");
             MsgBox->show();
         }
-    }
-    else
-    {
+
+    } catch (const std::invalid_argument &e) {
         auto *MsgBox = new QMessageBox(this);
         MsgBox->setWindowTitle("Error");
-        MsgBox->setAttribute ( Qt::WA_DeleteOnClose, true );
-        MsgBox->setText("Invalid input");
+        MsgBox->setAttribute(Qt::WA_DeleteOnClose, true);
+        MsgBox->setText(e.what());
         MsgBox->show();
     }
 }
 
-void ActivityRegister::addActivity() {
-    Activity newActivity(tmp_description, tmp_startTime, tmp_endTime, tmp_date);
+void ActivityRegister::addActivity(const Activity& newActivity) {
     activities.push_back(newActivity);
     ActivityRegister::refreshRegister();
 }
 
-void ActivityRegister::addActivityManual(const std::string &description, const QTime &startTime, const QTime &endTime,const QDate &date) {
-    std::string new_description = description;
+void ActivityRegister::addActivity(const std::string &description, const QTime &startTime, const QTime &endTime,const QDate &date) {
+    const std::string& new_description = description;
     QTime new_startTime = startTime;
     QTime new_endTime = endTime;
     QDate new_date = date;
@@ -240,7 +240,7 @@ void ActivityRegister::onDateChanged (QDate value) {
     tmp_date = value;
 }
 
-int ActivityRegister::getActivitiesPerDay(const QDate &date) {
+int ActivityRegister::getActivitiesPerDay(const QDate &date) const {
     int i = 0;
     for (auto it = activities.begin(); it != activities.end(); ++it)
     {
@@ -252,35 +252,13 @@ int ActivityRegister::getActivitiesPerDay(const QDate &date) {
     return i;
 }
 
-bool ActivityRegister::canAcceptActivity(const QDate &date)
+bool ActivityRegister::canAcceptActivity(const QDate &date) const
 {
     return ActivityRegister::getActivitiesPerDay(date) < maxActivitiesPerDay;
 }
 
-bool ActivityRegister::isValidInput() {
-    bool isValid = true;
-    if (tmp_description.empty()) {
-        isValid = false;
-    }
-    if (tmp_startTime > tmp_endTime) {
-        isValid = false;
-    }
-    return isValid;
-}
-
-bool ActivityRegister::isValidInputManual (const std::string &description, const QTime &startTime, const QTime &endTime, const QDate &date) {
-    bool isValid = true;
-    if (description.empty()) {
-        isValid = false;
-    }
-    if (startTime > endTime) {
-        isValid = false;
-    }
-    return isValid;
-}
-
-std::vector<Activity>* ActivityRegister::getActivities() {
-    return &activities;
+std::vector<Activity> ActivityRegister::getActivities() {
+    return activities;
 }
 
 int ActivityRegister::getMaxActivitiesPerDay() {

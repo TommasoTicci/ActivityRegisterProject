@@ -18,26 +18,22 @@ class ActivityRegister : public QWidget {
 public:
     ActivityRegister ();
 
-    bool canAcceptActivity (const QDate &date);
+    bool canAcceptActivity (const QDate &date) const;
 
-    int getActivitiesPerDay (const QDate &date);
+    int getActivitiesPerDay (const QDate &date) const;
 
-    void addActivityManual (const std::string &description, const QTime &startTime, const QTime &endTime, const QDate &date);
-
-    bool isValidInputManual (const std::string &description, const QTime &startTime, const QTime &endTime, const QDate &date);
+    void addActivity (const std::string &description, const QTime &startTime, const QTime &endTime, const QDate &date);
 
     std::string setCorrectDescriptionFormat (const std::string &description);
 
     std::string setCorrectHourFormat (const QTime &startTime, const QTime &endTime);
 
-    std::vector<Activity>* getActivities();
+    std::vector<Activity> getActivities();
 
     int getMaxActivitiesPerDay();
 
 private slots:
-    void addActivity ();
-
-    bool isValidInput ();
+    void addActivity (const Activity& newActivity);
 
     void onNewActivityButtonClicked();
 

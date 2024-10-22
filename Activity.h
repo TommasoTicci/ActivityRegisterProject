@@ -11,13 +11,20 @@
 
 class Activity {
 public:
-    Activity (std::string &description, QTime &start_time, QTime &end_time , QDate &d): description(description), startTime(start_time), endTime(end_time), date(d) {};
-    Activity () = default;
+    Activity(const std::string &description, const QTime &start_time, const QTime &end_time, const QDate &date)
+            : description(description), startTime(start_time), endTime(end_time), date(date) {
+        if (!isValidInput()) {
+            throw std::invalid_argument("Invalid input");
+        }
+    }
+    Activity() = default;
 
     std::string getDescription() const;
     QTime getStartTime() const;
     QTime getEndTime() const;
     QDate getDate() const;
+
+    bool isValidInput ();
 
     void setDescription(std::string &text);
     void setStartTime(QTime &time);

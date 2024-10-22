@@ -13,6 +13,6 @@ TEST(ActivityRegister, TestConstructor) {
     QApplication app(argc, argv);
 
     ActivityRegister a;
-    ASSERT_EQ(0, a.getActivities()->size());
+    ASSERT_EQ(0, a.getActivities().size());
     ASSERT_EQ(10, a.getMaxActivitiesPerDay());
 }

@@ -20,6 +20,16 @@ QDate Activity::getDate() const {
     return date;
 }
 
+bool Activity::isValidInput() {
+    if (description.empty()) {
+        return false;
+    }
+    if (startTime > endTime) {
+        return false;
+    }
+    return true;
+}
+
 void Activity::setDescription(std::string &text) {
     description = text;
 }

@@ -11,8 +11,8 @@ class ActivitySuite : public ::testing::Test {
 protected:
     virtual void SetUp() {
         std::string description = "TestDescription";
-        QTime startTime(10, 0);
-        QTime endTime(20, 0);
+        startTime = QTime(10, 0);
+        endTime = QTime(20, 0);
         QDate date(2023, 5, 12);
         activity.setDescription(description);
         activity.setStartTime(startTime);
@@ -21,6 +21,8 @@ protected:
     }
 
     Activity activity;
+    QTime startTime;
+    QTime endTime;
 };
 
 TEST_F(ActivitySuite, TestGetDescription) {
@@ -37,4 +39,15 @@ ASSERT_EQ(QTime(20, 0), activity.getEndTime());
 
 TEST_F(ActivitySuite, TestGetDate) {
 ASSERT_EQ(QDate(2023, 5, 12), activity.getDate());
+}
+
+TEST_F(ActivitySuite, TestValidInput) {
+    //Test start time before end time (TRUE)
+    ASSERT_TRUE(activity.isValidInput());
+    //Test start time = end time (TRUE)
+    activity.setEndTime(startTime);
+    ASSERT_TRUE(activity.isValidInput());
+    //Test start time after end time (FALSE)
+    activity.setStartTime(endTime);
+    ASSERT_FALSE(activity.isValidInput());
 }
