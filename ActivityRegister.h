@@ -28,12 +28,14 @@ public:
 
     std::string setCorrectHourFormat (const QTime &startTime, const QTime &endTime);
 
-    std::vector<Activity> getActivities();
+    std::map<QDate, std::vector<Activity>> getActivities();
 
     int getMaxActivitiesPerDay();
 
 private slots:
     void addActivity (const Activity& newActivity);
+
+    std::vector<Activity*> getSearchActivities(std::string &search);
 
     void onNewActivityButtonClicked();
 
@@ -41,9 +43,17 @@ private slots:
 
     void onAddButtonClicked ();
 
+    void onSearchButtonClicked ();
+
     void onCancelButtonClicked ();
 
     void onDeleteButtonClicked (int index);
+
+    void onDeleteButtonClicked (int index, std::string search);
+
+    void onModifyButtonClicked (int index);
+
+    void onModifyButtonClicked (int index, std::string search);
 
     void onDescriptionChanged (const QString &text);
 
@@ -53,21 +63,29 @@ private slots:
 
     void onDateChanged (QDate value);
 
+    void onSearchBarChanged (const QString &text);
+
+    void onViewButtonClicked (QDate date);
+
 private:
-    std::vector<Activity> activities;
+    std::map<QDate, std::vector<Activity>> activities;
     int maxActivitiesPerDay = 10;
     std::string tmp_description;
     QTime tmp_startTime;
     QTime tmp_endTime;
     QDate tmp_date;
+    std::string tmp_search;
     QDialog *NewActivityDialog = nullptr;
     QDateEdit *registerDate;
     QScrollArea *scrollRegisterArea;
+    QLineEdit *searchBar;
     QLabel *programmerLabel;
     QLabel *activityLabel= nullptr;
     QLabel *timeLabel= nullptr;
     QPushButton *addActivityButton;
+    QPushButton *searchButton;
     QPushButton *deleteButton = nullptr;
+    QPushButton *modifyButton = nullptr;
 };
 
 

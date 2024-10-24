@@ -20,7 +20,7 @@ QDate Activity::getDate() const {
     return date;
 }
 
-bool Activity::isValidInput() {
+bool Activity::isValidInput() const {
     if (description.empty()) {
         return false;
     }
@@ -44,4 +44,14 @@ void Activity::setEndTime(QTime &time) {
 
 void Activity::setDate(QDate &d) {
     date = d;
+}
+
+void Activity::modifyActivity(std::string &text, QTime &s_time, QTime &e_time, QDate &d) {
+    setDescription(text);
+    setStartTime(s_time);
+    setEndTime(e_time);
+    setDate(d);
+    if (!isValidInput()) {
+        throw std::invalid_argument("Invalid input");
+    }
 }

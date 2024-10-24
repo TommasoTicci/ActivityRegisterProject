@@ -24,12 +24,14 @@ public:
     QTime getEndTime() const;
     QDate getDate() const;
 
-    bool isValidInput ();
+    bool isValidInput () const;
 
     void setDescription(std::string &text);
     void setStartTime(QTime &time);
     void setEndTime(QTime &time);
     void setDate(QDate &d);
+
+    void modifyActivity(std::string &text, QTime &s_time, QTime &e_time, QDate &d);
 
 private:
     std::string description;
