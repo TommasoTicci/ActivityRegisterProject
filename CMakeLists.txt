@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(ActivityRegisterProject)
 
-set(VERSION 1.1)
+set(VERSION 1.1.1)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")

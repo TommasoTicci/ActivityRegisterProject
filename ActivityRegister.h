@@ -24,13 +24,17 @@ public:
 
     void addActivity (const std::string &description, const QTime &startTime, const QTime &endTime, const QDate &date);
 
-    std::string setCorrectDescriptionFormat (const std::string &description);
+    std::string setCorrectDescriptionFormat (const std::string &description) const;
 
-    std::string setCorrectHourFormat (const QTime &startTime, const QTime &endTime);
+    std::string setCorrectHourFormat (const QTime &startTime, const QTime &endTime) const;
 
-    std::map<QDate, std::vector<Activity>> getActivities();
+    std::map<QDate, std::vector<Activity>> getActivities() const;
 
-    int getMaxActivitiesPerDay();
+    int getMaxActivitiesPerDay() const;
+
+    void setMaxActivitiesPerDay(int max);
+
+    int getSearchNumber(std::string &search) const;
 
 private slots:
     void addActivity (const Activity& newActivity);

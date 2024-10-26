@@ -15,4 +15,6 @@ TEST(ActivityRegister, TestConstructor) {
     ActivityRegister a;
     ASSERT_EQ(0, a.getActivities().size());
     ASSERT_EQ(10, a.getMaxActivitiesPerDay());
+    std::map<QDate, std::vector<Activity>> activities = a.getActivities();
+    ASSERT_EQ(0, activities.size());
 }

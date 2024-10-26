@@ -16,4 +16,6 @@ TEST(Activity, TestConstructor) {
     ASSERT_EQ(QTime(10, 0), activity.getStartTime());
     ASSERT_EQ(QTime(20, 0), activity.getEndTime());
     ASSERT_EQ(QDate(2023, 5, 12), activity.getDate());
+    ASSERT_THROW(Activity("", startTime, endTime, date), std::invalid_argument);
+    ASSERT_THROW(Activity(description, endTime, startTime, date), std::invalid_argument);
 }

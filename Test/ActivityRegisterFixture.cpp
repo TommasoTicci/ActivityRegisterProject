@@ -45,7 +45,11 @@ TEST_F(ActivityRegisterSuite, TestAddActivityOnDifferentDate){
 }
 
 TEST_F(ActivityRegisterSuite, TestMaxActivitiesCap){
-    for (int i = 0; i < 9; ++i) {
+    activityRegister->setMaxActivitiesPerDay(10);
+    ASSERT_EQ(activityRegister->getMaxActivitiesPerDay(), 10);
+    ASSERT_THROW(activityRegister->setMaxActivitiesPerDay(0), std::invalid_argument);
+    ASSERT_THROW(activityRegister->setMaxActivitiesPerDay(11), std::invalid_argument);
+    for (int i = 0; i < activityRegister->getMaxActivitiesPerDay()-1; ++i) {
         activityRegister->addActivity(description, startTime, endTime, date);
     }
     //Test add activity with max activities per day - 1
@@ -71,4 +75,15 @@ TEST_F(ActivityRegisterSuite, TestHourFormat){
     ASSERT_EQ("Start: 10:00   End: 12:10", activityRegister->setCorrectHourFormat(QTime(10, 0),(QTime(12, 10))));
     //Test hour with 1 digit (end)
     ASSERT_EQ("Start: 10:10   End: 12:00", activityRegister->setCorrectHourFormat(QTime(10, 10),(QTime(12, 0))));
+}
+
+TEST_F(ActivityRegisterSuite, TestSearchNumber){
+    std::string search = "TestDescription";
+    ASSERT_EQ(0, activityRegister->getSearchNumber(search));
+    activityRegister->addActivity(description, startTime, endTime, date);
+    ASSERT_EQ(1, activityRegister->getSearchNumber(search));
+    activityRegister->addActivity(description, startTime, endTime, date);
+    ASSERT_EQ(2, activityRegister->getSearchNumber(search));
+    activityRegister->addActivity("NotEqual", startTime, endTime, date);
+    ASSERT_EQ(2, activityRegister->getSearchNumber(search));
 }
