@@ -55,3 +55,7 @@ void Activity::modifyActivity(std::string &text, QTime &s_time, QTime &e_time, Q
         throw std::invalid_argument("Invalid input");
     }
 }
+
+bool Activity::isEqual(const Activity &activity) const {
+    return description == activity.description && startTime == activity.startTime && endTime == activity.endTime && date == activity.date;
+}

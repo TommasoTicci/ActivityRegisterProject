@@ -12,67 +12,9 @@
 
 ActivityRegister::ActivityRegister ()
 {
-    setFixedSize(800, 600);
-    setWindowTitle("Activity Register");
-    registerDate = new QDateEdit(QDate::currentDate(),this);
-    registerDate->setGeometry(320, 10, 160, 30);
-    registerDate->show();
-    scrollRegisterArea = new QScrollArea(this);
-    scrollRegisterArea->setGeometry(100,90 ,600,400);
-    scrollRegisterArea->show();
-    addActivityButton = new QPushButton("Add activity", this);
-    addActivityButton->setGeometry(350, 50, 100, 30);
-    addActivityButton->show();
-    programmerLabel = new QLabel("by Tommaso Ticci", this);
-    programmerLabel->setGeometry(10, 570, 200, 30);
-    programmerLabel->show();
-    searchBar = new QLineEdit(this);
-    searchBar->setGeometry(250, 500, 200, 30);
-    searchBar->setPlaceholderText("Search");
-    searchBar->show();
-    tmp_search = "";
-    searchButton = new QPushButton("Search", this);
-    searchButton->setGeometry(470, 500, 100, 30);
-    searchButton->show();
-    activityLabel = new QLabel("No activities", scrollRegisterArea);
-    activityLabel->setGeometry(10, 10, 400, 20);
-    auto * Font = new QFont(activityLabel->font());
-    Font->setPointSize(10);
-    activityLabel->setFont(*Font);
-    activityLabel->show();
-    delete Font;
-    QObject::connect(addActivityButton, &QPushButton::clicked, this, &ActivityRegister::onNewActivityButtonClicked);
-    QObject::connect(registerDate, &QDateEdit::dateChanged, this, &ActivityRegister::refreshRegister);
-    QObject::connect(searchBar, &QLineEdit::textChanged, this, &ActivityRegister::onSearchBarChanged);
-    QObject::connect(searchButton, &QPushButton::clicked, this, &ActivityRegister::onSearchButtonClicked);
-    show();
-    NewActivityDialog = new QDialog(this);
-    NewActivityDialog->setAttribute ( Qt::WA_DeleteOnClose, true );
-    NewActivityDialog->setWindowTitle("Set Max Activities Per Day");
-    NewActivityDialog->setWindowModality(Qt::WindowModality::ApplicationModal);
-    NewActivityDialog->setFixedSize(200, 100);
-    NewActivityDialog->show();
-    auto *maxActivitiesLabel = new QLabel("Max Activities Per Day (<10)", NewActivityDialog);
-    maxActivitiesLabel->setGeometry(10, 10, 200, 30);
-    maxActivitiesLabel->show();
-    auto *maxActivitiesArea = new QLineEdit("10", NewActivityDialog);
-    maxActivitiesArea->setGeometry(10, 50, 70, 30);
-    maxActivitiesArea->show();
-    auto *setButton = new QPushButton("Set", NewActivityDialog);
-    setButton->show();
-    setButton->setGeometry(90, 50, 70, 30);
-    connect(setButton, &QPushButton::clicked, this, [this, maxActivitiesArea] {
-        try {
-            setMaxActivitiesPerDay(maxActivitiesArea->text().toInt());
-            NewActivityDialog->close();
-        } catch (const std::invalid_argument &e) {
-            auto *MsgBox = new QMessageBox(this);
-            MsgBox->setWindowTitle("Error");
-            MsgBox->setAttribute(Qt::WA_DeleteOnClose, true);
-            MsgBox->setText(e.what());
-            MsgBox->show();
-        }
-    });
+    uiInitializeMain();
+    uiSetUpRegisterConnections();
+    uiInitializeMaxActivitiesDialog();
 }
 
 void ActivityRegister::onNewActivityButtonClicked() {
@@ -80,87 +22,23 @@ void ActivityRegister::onNewActivityButtonClicked() {
     tmp_startTime = QTime::currentTime();
     tmp_endTime = QTime::currentTime();
     tmp_date = registerDate->date();
-    NewActivityDialog = new QDialog(this);
-    NewActivityDialog->setAttribute ( Qt::WA_DeleteOnClose, true );
-    NewActivityDialog->setWindowTitle("New Activity");
-    NewActivityDialog->setWindowModality(Qt::WindowModality::ApplicationModal);
-    NewActivityDialog->setFixedSize(400, 300);
-    NewActivityDialog->show();
-    auto *descriptionLabel = new QLabel("Description", NewActivityDialog);
-    descriptionLabel->setGeometry(10, 10, 200, 30);
-    descriptionLabel->show();
-    auto *descriptionArea = new QLineEdit("Activity", NewActivityDialog);
-    descriptionArea->setGeometry(10, 50, 200, 30);
-    descriptionArea->show();
-    auto *timeLabel = new QLabel("Start Time                      End Time", NewActivityDialog);
-    timeLabel->setGeometry(10, 90, 200, 30);
-    timeLabel->show();
-    auto *startTimeArea = new QTimeEdit(QTime::currentTime(),NewActivityDialog);
-    startTimeArea->setGeometry(10, 130, 70, 30);
-    startTimeArea->show();
-    auto *endTimeArea = new QTimeEdit(QTime::currentTime(),NewActivityDialog);
-    endTimeArea->setGeometry(130, 130, 70, 30);
-    endTimeArea->show();
-    auto *addButton = new QPushButton("Add", NewActivityDialog);
-    addButton->show();
-    addButton->setGeometry(290, 10, 100, 30);
-    auto *cancelButton = new QPushButton("Cancel", NewActivityDialog);
-    cancelButton->show();
-    cancelButton->setGeometry(290, 50, 100, 30);
-    auto *dateLabel = new QLabel("Date", NewActivityDialog);
-    dateLabel->setGeometry(10, 170, 100, 30);
-    dateLabel->show();
-    auto *dateArea = new QDateEdit(registerDate->date(), NewActivityDialog);
-    dateArea->setGeometry(10, 210, 170, 30);
-    dateArea->show();
-    connect(addButton, &QPushButton::clicked, this, &ActivityRegister::onAddButtonClicked);
-    connect(cancelButton, &QPushButton::clicked, this, &ActivityRegister::onCancelButtonClicked);
-    connect(descriptionArea, &QLineEdit::textChanged, this, &ActivityRegister::onDescriptionChanged);
-    connect(startTimeArea, &QTimeEdit::timeChanged, this, &ActivityRegister::onStartTimeChanged);
-    connect(endTimeArea, &QTimeEdit::timeChanged, this, &ActivityRegister::onEndTimeChanged);
-    connect(dateArea, &QDateEdit::dateChanged, this, &ActivityRegister::onDateChanged);
+    uiInitializeDialogWindow("New Activity", tmp_description, tmp_startTime, tmp_endTime, tmp_date, false);
 }
 
 void ActivityRegister::refreshRegister() {
     delete scrollRegisterArea;
-    scrollRegisterArea = new QScrollArea(this);
-    scrollRegisterArea->setGeometry(100, 90, 600, 400);
-    scrollRegisterArea->show();
+    uiCreateRegisterArea(600, 400);
     int i = 0;
     auto it = activities.find(registerDate->date());
     if (it != activities.end()) {
         const std::vector<Activity>& dayActivities = it->second;
         for (const Activity& activity : dayActivities) {
             i++;
-            activityLabel = new QLabel(QString::fromStdString(setCorrectDescriptionFormat(activity.getDescription())), scrollRegisterArea);
-            activityLabel->setGeometry(10, 10 + 40 * (i - 1), 350, 20);
-            timeLabel = new QLabel(QString::fromStdString(setCorrectHourFormat(activity.getStartTime(), activity.getEndTime())), scrollRegisterArea);
-            timeLabel->setGeometry(350, 10 + 40 * (i - 1), 200, 20);
-            auto* Font = new QFont(activityLabel->font());
-            Font->setPointSize(10);
-            activityLabel->setFont(*Font);
-            timeLabel->setFont(*Font);
-            deleteButton = new QPushButton("X", scrollRegisterArea);
-            deleteButton->setGeometry(560, 10 + 40 * (i - 1), 20, 20);
-            connect(deleteButton, &QPushButton::clicked, this, [this, i] { onDeleteButtonClicked(i - 1); });
-            modifyButton = new QPushButton("M", scrollRegisterArea);
-            modifyButton->setGeometry(530, 10 + 40 * (i - 1), 20, 20);
-            connect(modifyButton, &QPushButton::clicked, this, [this, i] { onModifyButtonClicked(i - 1); });
-            activityLabel->show();
-            timeLabel->show();
-            deleteButton->show();
-            modifyButton->show();
-            delete Font;
+            uiShowActivity(i, activity);
         }
     }
     if (i == 0) {
-        activityLabel = new QLabel("No activities", scrollRegisterArea);
-        activityLabel->setGeometry(10, 10, 400, 20);
-        auto* Font = new QFont(activityLabel->font());
-        Font->setPointSize(10);
-        activityLabel->setFont(*Font);
-        activityLabel->show();
-        delete Font;
+        uiCreateLabel("No activities", 10, 10, 400, 20, scrollRegisterArea);
     }
 }
 
@@ -208,32 +86,20 @@ void ActivityRegister::onAddButtonClicked() {
 
         if (canAcceptActivity(tmp_date)) {
             addActivity(newActivity);
-            auto *MsgBox = new QMessageBox(this);
-            MsgBox->setWindowTitle("Success");
-            MsgBox->setAttribute(Qt::WA_DeleteOnClose, true);
-            MsgBox->setText("Added");
-            MsgBox->show();
+            uiCreateMsgBox("Success","Added");
             NewActivityDialog->close();
         } else {
-            auto *MsgBox = new QMessageBox(this);
-            MsgBox->setWindowTitle("Error");
-            MsgBox->setAttribute(Qt::WA_DeleteOnClose, true);
-            MsgBox->setText("Too many activities");
-            MsgBox->show();
+            uiCreateMsgBox("Error","Too many activities");
         }
 
     } catch (const std::invalid_argument &e) {
-        auto *MsgBox = new QMessageBox(this);
-        MsgBox->setWindowTitle("Error");
-        MsgBox->setAttribute(Qt::WA_DeleteOnClose, true);
-        MsgBox->setText(e.what());
-        MsgBox->show();
+        uiCreateMsgBox("Error",e.what());
     }
 }
 
 void ActivityRegister::addActivity(const Activity& newActivity) {
     activities[newActivity.getDate()].push_back(newActivity);
-    ActivityRegister::refreshRegister();
+    refreshRegister();
 }
 
 void ActivityRegister::addActivity(const std::string &description, const QTime &startTime, const QTime &endTime,const QDate &date) {
@@ -243,53 +109,12 @@ void ActivityRegister::addActivity(const std::string &description, const QTime &
     QDate new_date = date;
     Activity newActivity(new_description, new_startTime, new_endTime, new_date);
     activities[newActivity.getDate()].push_back(newActivity);
-    ActivityRegister::refreshRegister();
+    refreshRegister();
 }
 
 void ActivityRegister::onSearchButtonClicked() {
     std::vector<Activity*> searchedActivity = getSearchActivities(tmp_search);
-    NewActivityDialog = new QDialog(this);
-    NewActivityDialog->setAttribute(Qt::WA_DeleteOnClose, true);
-    NewActivityDialog->setWindowTitle("Search Results");
-    NewActivityDialog->setWindowModality(Qt::WindowModality::ApplicationModal);
-    NewActivityDialog->setFixedSize(600, 400);
-    QScrollArea *scrollArea = new QScrollArea(NewActivityDialog);
-    scrollArea->setWidgetResizable(true);
-    QWidget *scrollWidget = new QWidget();
-    QVBoxLayout *layout = new QVBoxLayout(scrollWidget);
-    for (int i = 0; i < searchedActivity.size(); i++) {
-        const auto& activity = searchedActivity[i];
-        QHBoxLayout *activityLayout = new QHBoxLayout();
-        QLabel *descriptionLabel = new QLabel(QString::fromStdString(activity->getDescription()));
-        activityLayout->addWidget(descriptionLabel);
-        QLabel *dateLabel = new QLabel(activity->getDate().toString());
-        activityLayout->addWidget(dateLabel);
-        QPushButton *viewButton = new QPushButton("View");
-        connect(viewButton, &QPushButton::clicked, this, [this, activity] { onViewButtonClicked(activity->getDate()); });
-        activityLayout->addWidget(viewButton);
-        QPushButton *mButton = new QPushButton("M");
-        mButton->setToolTip("Modify");
-        connect(mButton, &QPushButton::clicked, this, [this, i, searchedActivity]() {
-            onModifyButtonClicked(i, tmp_search);
-        });
-        activityLayout->addWidget(mButton);
-        QPushButton *xButton = new QPushButton("X");
-        connect(xButton, &QPushButton::clicked, this, [this, i, searchedActivity]() {
-            onDeleteButtonClicked(i, tmp_search);
-        });
-        activityLayout->addWidget(xButton);
-        layout->addLayout(activityLayout);
-    }
-    if (searchedActivity.empty()) {
-        QLabel *noResultsLabel = new QLabel("No results found");
-        layout->addWidget(noResultsLabel);
-    }
-    scrollWidget->setLayout(layout);
-    scrollArea->setWidget(scrollWidget);
-    QVBoxLayout *dialogLayout = new QVBoxLayout(NewActivityDialog);
-    dialogLayout->addWidget(scrollArea);
-    NewActivityDialog->setLayout(dialogLayout);
-    NewActivityDialog->exec();
+    uiSetUpSearchWindow(searchedActivity);
 }
 
 std::vector<Activity*> ActivityRegister::getSearchActivities(std::string &search) {
@@ -355,12 +180,6 @@ void ActivityRegister::onViewButtonClicked(QDate date) {
 }
 
 void ActivityRegister::onModifyButtonClicked(int index) {
-    NewActivityDialog = new QDialog(this);
-    NewActivityDialog->setAttribute ( Qt::WA_DeleteOnClose, true );
-    NewActivityDialog->setWindowTitle("New Activity");
-    NewActivityDialog->setWindowModality(Qt::WindowModality::ApplicationModal);
-    NewActivityDialog->setFixedSize(400, 300);
-    NewActivityDialog->show();
     auto it = activities.find(registerDate->date());
     if (it != activities.end()) {
         std::vector<Activity> &dayActivities = it->second;
@@ -368,140 +187,24 @@ void ActivityRegister::onModifyButtonClicked(int index) {
         tmp_startTime = dayActivities[index].getStartTime();
         tmp_endTime = dayActivities[index].getEndTime();
         tmp_date = registerDate->date();
-        auto *descriptionLabel = new QLabel("Description", NewActivityDialog);
-        descriptionLabel->setGeometry(10, 10, 200, 30);
-        descriptionLabel->show();
-        auto *descriptionArea = new QLineEdit(QString::fromStdString(tmp_description), NewActivityDialog);
-        descriptionArea->setGeometry(10, 50, 200, 30);
-        descriptionArea->show();
-        auto *timeLabel = new QLabel("Start Time                      End Time", NewActivityDialog);
-        timeLabel->setGeometry(10, 90, 200, 30);
-        timeLabel->show();
-        auto *startTimeArea = new QTimeEdit(tmp_startTime,NewActivityDialog);
-        startTimeArea->setGeometry(10, 130, 70, 30);
-        startTimeArea->show();
-        auto *endTimeArea = new QTimeEdit(tmp_endTime,NewActivityDialog);
-        endTimeArea->setGeometry(130, 130, 70, 30);
-        endTimeArea->show();
-        auto *modButton = new QPushButton("Modify", NewActivityDialog);
-        modButton->show();
-        modButton->setGeometry(290, 10, 100, 30);
-        auto *cancelButton = new QPushButton("Cancel", NewActivityDialog);
-        cancelButton->show();
-        cancelButton->setGeometry(290, 50, 100, 30);
-        auto *dateLabel = new QLabel("Date", NewActivityDialog);
-        dateLabel->setGeometry(10, 170, 100, 30);
-        dateLabel->show();
-        auto *dateArea = new QDateEdit(registerDate->date(), NewActivityDialog);
-        dateArea->setGeometry(10, 210, 170, 30);
-        dateArea->show();
-        connect(modButton, &QPushButton::clicked, this, [this, &dayActivities, index]() {
-            try {
-                if (!canAcceptActivity(tmp_date) and dayActivities[index].getDate() != tmp_date) {
-                    throw std::invalid_argument("Too many activities");
-                }
-                dayActivities[index].modifyActivity(tmp_description, tmp_startTime, tmp_endTime, tmp_date);
-                if (tmp_date != registerDate->date()) {
-                    activities[tmp_date].push_back(dayActivities[index]);
-                    activities[registerDate->date()].erase(activities[registerDate->date()].begin() + index);
-                }
-                refreshRegister();
-                NewActivityDialog->close();
-            } catch (const std::invalid_argument &e) {
-                auto *MsgBox = new QMessageBox(this);
-                MsgBox->setWindowTitle("Error");
-                MsgBox->setAttribute(Qt::WA_DeleteOnClose, true);
-                MsgBox->setText(e.what());
-                MsgBox->show();
-            }
-        });
-        connect(cancelButton, &QPushButton::clicked, this, &ActivityRegister::onCancelButtonClicked);
-        connect(descriptionArea, &QLineEdit::textChanged, this, &ActivityRegister::onDescriptionChanged);
-        connect(startTimeArea, &QTimeEdit::timeChanged, this, &ActivityRegister::onStartTimeChanged);
-        connect(endTimeArea, &QTimeEdit::timeChanged, this, &ActivityRegister::onEndTimeChanged);
-        connect(dateArea, &QDateEdit::dateChanged, this, &ActivityRegister::onDateChanged);
+
+        uiInitializeDialogWindow("Modify Activity", tmp_description, tmp_startTime, tmp_endTime, tmp_date, true);
+
+        modifyButtonManager(dayActivities, index);
     }
 }
 
 void ActivityRegister::onModifyButtonClicked(int index, std::string search) {
     NewActivityDialog->close();
-    NewActivityDialog = new QDialog(this);
-    NewActivityDialog->setAttribute ( Qt::WA_DeleteOnClose, true );
-    NewActivityDialog->setWindowTitle("New Activity");
-    NewActivityDialog->setWindowModality(Qt::WindowModality::ApplicationModal);
-    NewActivityDialog->setFixedSize(400, 300);
-    NewActivityDialog->show();
     std::vector<Activity*> searchedActivity = getSearchActivities(search);
     tmp_description = searchedActivity[index]->getDescription();
     tmp_startTime = searchedActivity[index]->getStartTime();
     tmp_endTime = searchedActivity[index]->getEndTime();
     tmp_date = searchedActivity[index]->getDate();
-    auto *descriptionLabel = new QLabel("Description", NewActivityDialog);
-    descriptionLabel->setGeometry(10, 10, 200, 30);
-    descriptionLabel->show();
-    auto *descriptionArea = new QLineEdit(QString::fromStdString(tmp_description), NewActivityDialog);
-    descriptionArea->setGeometry(10, 50, 200, 30);
-    descriptionArea->show();
-    auto *timeLabel = new QLabel("Start Time                      End Time", NewActivityDialog);
-    timeLabel->setGeometry(10, 90, 200, 30);
-    timeLabel->show();
-    auto *startTimeArea = new QTimeEdit(tmp_startTime,NewActivityDialog);
-    startTimeArea->setGeometry(10, 130, 70, 30);
-    startTimeArea->show();
-    auto *endTimeArea = new QTimeEdit(tmp_endTime,NewActivityDialog);
-    endTimeArea->setGeometry(130, 130, 70, 30);
-    endTimeArea->show();
-    auto *modButton = new QPushButton("Modify", NewActivityDialog);
-    modButton->show();
-    modButton->setGeometry(290, 10, 100, 30);
-    auto *cancelButton = new QPushButton("Cancel", NewActivityDialog);
-    cancelButton->show();
-    cancelButton->setGeometry(290, 50, 100, 30);
-    auto *dateLabel = new QLabel("Date", NewActivityDialog);
-    dateLabel->setGeometry(10, 170, 100, 30);
-    dateLabel->show();
-    auto *dateArea = new QDateEdit(tmp_date, NewActivityDialog);
-    dateArea->setGeometry(10, 210, 170, 30);
-    dateArea->show();
-    connect(modButton, &QPushButton::clicked, this, [this, searchedActivity, index]() {
-        try {
-            QDate oldDate = searchedActivity[index]->getDate();
-            Activity *oldActivity = searchedActivity[index];
-            if (!canAcceptActivity(tmp_date) and oldDate != tmp_date) {
-                throw std::invalid_argument("Too many activities");
-            }
-            searchedActivity[index]->modifyActivity(tmp_description, tmp_startTime, tmp_endTime, tmp_date);
-            if (oldDate != tmp_date) {
-                auto dateIt = activities.find(oldDate);
-                if (dateIt != activities.end()) {
-                    auto& activityList = dateIt->second;
-                    activities[tmp_date].push_back(*oldActivity);
-                    activityList.erase(std::remove_if(activityList.begin(), activityList.end(),
-                                                      [searchedActivity, index, &oldActivity](const Activity& activity) {
-                        return activity.getStartTime() == oldActivity->getStartTime() &&
-                        activity.getEndTime() == oldActivity->getEndTime() &&
-                        activity.getDescription() == oldActivity->getDescription();
-                    }), activityList.end());
-                    if (activityList.empty()) {
-                        activities.erase(dateIt);
-                    }
-                }
-            }
-            refreshRegister();
-            NewActivityDialog->close();
-        } catch (const std::invalid_argument &e) {
-            auto *MsgBox = new QMessageBox(this);
-            MsgBox->setWindowTitle("Error");
-            MsgBox->setAttribute(Qt::WA_DeleteOnClose, true);
-            MsgBox->setText(e.what());
-            MsgBox->show();
-        }
-    });
-    connect(cancelButton, &QPushButton::clicked, this, &ActivityRegister::onCancelButtonClicked);
-    connect(descriptionArea, &QLineEdit::textChanged, this, &ActivityRegister::onDescriptionChanged);
-    connect(startTimeArea, &QTimeEdit::timeChanged, this, &ActivityRegister::onStartTimeChanged);
-    connect(endTimeArea, &QTimeEdit::timeChanged, this, &ActivityRegister::onEndTimeChanged);
-    connect(dateArea, &QDateEdit::dateChanged, this, &ActivityRegister::onDateChanged);
+
+    uiInitializeDialogWindow("Modify Activity", tmp_description, tmp_startTime, tmp_endTime, tmp_date, true);
+
+    modifyButtonManager(searchedActivity, index, search);
 }
 
 void ActivityRegister::onDescriptionChanged (const QString &text) {
@@ -563,4 +266,286 @@ int ActivityRegister::getSearchNumber(std::string &search) const {
         }
     }
     return count;
+}
+
+void ActivityRegister::modifyButtonManager(std::vector<Activity>& dayActivities, int index) {
+    auto* modButton = uiCreateModifyButton();
+    connect(modButton, &QPushButton::clicked, this, [this, &dayActivities, index]() {
+        try {
+            if (!canAcceptActivity(tmp_date) and dayActivities[index].getDate() != tmp_date) {
+                throw std::invalid_argument("Too many activities");
+            }
+            dayActivities[index].modifyActivity(tmp_description, tmp_startTime, tmp_endTime, tmp_date);
+            if (tmp_date != registerDate->date()) {
+                activities[tmp_date].push_back(dayActivities[index]);
+                activities[registerDate->date()].erase(activities[registerDate->date()].begin() + index);
+            }
+            refreshRegister();
+            NewActivityDialog->close();
+        } catch (const std::invalid_argument &e) {
+            uiCreateMsgBox("Error",e.what());
+        }
+    });
+}
+
+void ActivityRegister::modifyButtonManager(std::vector<Activity*>& searchedActivity, int index, const std::string& search) {
+    auto* modButton = uiCreateModifyButton();
+    connect(modButton, &QPushButton::clicked, this, [this, searchedActivity, index]() {
+        try {
+            QDate oldDate = searchedActivity[index]->getDate();
+            Activity *oldActivity = searchedActivity[index];
+            if (!canAcceptActivity(tmp_date) and oldDate != tmp_date) {
+                throw std::invalid_argument("Too many activities");
+            }
+            searchedActivity[index]->modifyActivity(tmp_description, tmp_startTime, tmp_endTime, tmp_date);
+            if (oldDate != tmp_date) {
+                auto dateIt = activities.find(oldDate);
+                if (dateIt != activities.end()) {
+                    auto& activityList = dateIt->second;
+                    activities[tmp_date].push_back(*oldActivity);
+                    activityList.erase(std::remove_if(activityList.begin(), activityList.end(),
+                                                      [this, &oldActivity](const Activity& activity) {
+                                                          return activity.isEqual(*oldActivity);
+                                                      }),
+                                       activityList.end());
+                    if (activityList.empty()) {
+                        activities.erase(dateIt);
+                    }
+                }
+            }
+            refreshRegister();
+            NewActivityDialog->close();
+        } catch (const std::invalid_argument &e) {
+            uiCreateMsgBox("Error",e.what());
+        }
+    });
+}
+
+
+
+// ------------------------- METODI UI -------------------------
+
+
+
+void ActivityRegister::uiInitializeMain() {
+    setFixedSize(800, 600);
+    setWindowTitle("Activity Register");
+
+    uiCreateRegisterArea(600, 400);
+
+    registerDate = new QDateEdit(QDate::currentDate(), this);
+    registerDate->setGeometry(320, 10, 160, 30);
+    registerDate->show();
+
+    searchBar = new QLineEdit(this);
+    searchBar->setGeometry(250, 500, 200, 30);
+    searchBar->setPlaceholderText("Search");
+    searchBar->show();
+
+    tmp_search = "";
+
+    uiCreateButton("Add activity", 350, 50, 100, 30, this, &ActivityRegister::onNewActivityButtonClicked);
+
+    uiCreateButton("Search", 470, 500, 100, 30, this, &ActivityRegister::onSearchButtonClicked);
+
+    uiCreateLabel("by Tommaso Ticci", 10, 570, 200, 30, this);
+
+    uiCreateLabel("No activities", 10, 10, 400, 20, scrollRegisterArea);
+
+    show();
+}
+
+void ActivityRegister::uiSetUpRegisterConnections() {
+    QObject::connect(registerDate, &QDateEdit::dateChanged, this, &ActivityRegister::refreshRegister);
+    QObject::connect(searchBar, &QLineEdit::textChanged, this, &ActivityRegister::onSearchBarChanged);
+}
+
+void ActivityRegister::uiInitializeMaxActivitiesDialog() {
+    uiCreateNewActivityDialog("Set Max Activities", 200, 100);
+
+    uiCreateLabel("Max Activities Per Day (<10)", 10, 10, 200, 30, NewActivityDialog);
+
+    auto *maxActivitiesArea = new QLineEdit("10", NewActivityDialog);
+    maxActivitiesArea->setGeometry(10, 50, 70, 30);
+    maxActivitiesArea->show();
+
+    auto *setButton = new QPushButton("Set", NewActivityDialog);
+    setButton->setGeometry(90, 50, 70, 30);
+    setButton->show();
+
+    connect(setButton, &QPushButton::clicked, this, [this, maxActivitiesArea] {
+        try {
+            setMaxActivitiesPerDay(maxActivitiesArea->text().toInt());
+            NewActivityDialog->close();
+        } catch (const std::invalid_argument &e) {
+            uiCreateMsgBox("Error", e.what());
+        }
+    });
+}
+
+void ActivityRegister::uiInitializeDialogWindow(const std::string& title, const std::string& description, QTime startTime, QTime endTime, QDate date, bool modify) {
+    uiCreateNewActivityDialog(title, 400, 300);
+
+    uiCreateLabel("Description", 10, 10, 200, 30, NewActivityDialog);
+
+    uiCreateLineEdit(description, 10, 50, 200, 30, NewActivityDialog, &ActivityRegister::onDescriptionChanged);
+
+    uiCreateLabel("Start Time                      End Time", 10, 90, 200, 30, NewActivityDialog);
+
+    uiCreateTimeEdit(startTime, 10, 130, 70, 30, NewActivityDialog, &ActivityRegister::onStartTimeChanged);
+
+    uiCreateTimeEdit(endTime, 130, 130, 70, 30, NewActivityDialog, &ActivityRegister::onEndTimeChanged);
+
+    uiCreateLabel("Date", 10, 170, 100, 30, NewActivityDialog);
+
+    uiCreateDataEdit(date, 10, 210, 170, 30, NewActivityDialog, &ActivityRegister::onDateChanged);
+
+    if (!modify) {
+        uiCreateButton("Add", 290, 10, 100, 30, NewActivityDialog, &ActivityRegister::onAddButtonClicked);
+    }
+
+    uiCreateButton("Cancel", 290, 50, 100, 30, NewActivityDialog, &ActivityRegister::onCancelButtonClicked);
+}
+
+void ActivityRegister::uiSetUpSearchWindow(const std::vector<Activity*>& searchedActivity) {
+    uiCreateNewActivityDialog("Search Results", 600, 400);
+
+    QScrollArea *scrollArea = new QScrollArea(NewActivityDialog);
+    scrollArea->setWidgetResizable(true);
+    QWidget *scrollWidget = new QWidget();
+    QVBoxLayout *layout = new QVBoxLayout(scrollWidget);
+
+    uiShowSearchResults(layout, searchedActivity);
+
+    scrollWidget->setLayout(layout);
+    scrollArea->setWidget(scrollWidget);
+
+    QVBoxLayout *dialogLayout = new QVBoxLayout(NewActivityDialog);
+    dialogLayout->addWidget(scrollArea);
+
+    NewActivityDialog->setLayout(dialogLayout);
+    NewActivityDialog->exec();
+}
+
+void ActivityRegister::uiCreateMsgBox(const std::string& title, const std::string& message) {
+    auto *MsgBox = new QMessageBox(this);
+    MsgBox->setWindowTitle(title.c_str());
+    MsgBox->setAttribute(Qt::WA_DeleteOnClose, true);
+    MsgBox->setText(message.c_str());
+    MsgBox->show();
+}
+
+void ActivityRegister::uiCreateNewActivityDialog(std::string title, int sizeX, int sizeY) {
+    NewActivityDialog = new QDialog(this);
+    NewActivityDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+    NewActivityDialog->setWindowTitle(title.c_str());
+    NewActivityDialog->setWindowModality(Qt::WindowModality::ApplicationModal);
+    NewActivityDialog->setFixedSize(sizeX, sizeY);
+    NewActivityDialog->show();
+}
+
+void ActivityRegister::uiCreateRegisterArea(int sizeX, int sizeY) {
+    scrollRegisterArea = new QScrollArea(this);
+    scrollRegisterArea->setGeometry(100, 90, sizeX, sizeY);
+    scrollRegisterArea->show();
+}
+
+void ActivityRegister::uiCreateButton(const std::string &text, int x, int y, int sizeX, int sizeY, QWidget *parent, void (ActivityRegister::*slot)()) const {
+    auto *button = new QPushButton(QString::fromStdString(text), parent);
+    button->setGeometry(x, y, sizeX, sizeY);
+    button->show();
+    QObject::connect(button, &QPushButton::clicked, this, slot);
+}
+
+void ActivityRegister::uiCreateTimeEdit(QTime time, int x, int y, int sizeX, int sizeY, QWidget *parent, void (ActivityRegister::*slot)(QTime)) const {
+    auto *timeEdit = new QTimeEdit(time, parent);
+    timeEdit->setGeometry(x, y, sizeX, sizeY);
+    timeEdit->show();
+    QObject::connect(timeEdit, &QTimeEdit::timeChanged, this, slot);
+}
+
+void ActivityRegister::uiCreateDataEdit(QDate date, int x, int y, int sizeX, int sizeY, QWidget *parent, void (ActivityRegister::*slot)(QDate)) const {
+    auto *dateEdit = new QDateEdit(date, parent);
+    dateEdit->setGeometry(x, y, sizeX, sizeY);
+    dateEdit->show();
+    QObject::connect(dateEdit, &QDateEdit::dateChanged, this, slot);
+}
+
+void ActivityRegister::uiCreateLineEdit(const std::string &text, int x, int y, int sizeX, int sizeY, QWidget *parent, void (ActivityRegister::*slot)(const QString &)) const {
+    auto *lineEdit = new QLineEdit(QString::fromStdString(text), parent);
+    lineEdit->setGeometry(x, y, sizeX, sizeY);
+    lineEdit->show();
+    QObject::connect(lineEdit, &QLineEdit::textChanged, this, slot);
+}
+
+void ActivityRegister::uiCreateLabel(const std::string &text, int x, int y, int sizeX, int sizeY, QWidget *parent) const {
+    auto *label = new QLabel(text.c_str(), parent);
+    label->setGeometry(x, y, sizeX, sizeY);
+    label->show();
+}
+
+void ActivityRegister::uiShowActivity(int index, const Activity& activity) {
+    uiCreateLabel(setCorrectDescriptionFormat(activity.getDescription()), 10, 10 + 40 * (index - 1), 350, 20, scrollRegisterArea);
+
+    uiCreateLabel(setCorrectHourFormat(activity.getStartTime(), activity.getEndTime()), 350, 10 + 40 * (index - 1), 200, 20, scrollRegisterArea);
+
+    auto* deleteButton = new QPushButton("X", scrollRegisterArea);
+    deleteButton->setGeometry(560, 10 + 40 * (index - 1), 20, 20);
+    connect(deleteButton, &QPushButton::clicked, this, [this, index] { onDeleteButtonClicked(index - 1); });
+
+    auto* modifyButton = new QPushButton("M", scrollRegisterArea);
+    modifyButton->setGeometry(530, 10 + 40 * (index - 1), 20, 20);
+    connect(modifyButton, &QPushButton::clicked, this, [this, index] { onModifyButtonClicked(index - 1); });
+
+    deleteButton->show();
+    modifyButton->show();
+}
+
+void ActivityRegister::uiShowSearchResults(QVBoxLayout *layout, const std::vector<Activity*> &activities) {
+    for (size_t i = 0; i < activities.size(); i++) {
+        const auto& activity = activities[i];
+        QHBoxLayout *activityLayout = uiCreateSearchResultsLayout(activity, i);
+        layout->addLayout(activityLayout);
+    }
+    if (activities.empty()) {
+        layout->addWidget(new QLabel("No results found"));
+    }
+}
+
+QHBoxLayout* ActivityRegister::uiCreateSearchResultsLayout(Activity* activity, int index) {
+    QHBoxLayout *activityLayout = new QHBoxLayout();
+
+    QLabel *descriptionLabel = new QLabel(QString::fromStdString(activity->getDescription()));
+    activityLayout->addWidget(descriptionLabel);
+
+    QLabel *dateLabel = new QLabel(activity->getDate().toString());
+    activityLayout->addWidget(dateLabel);
+
+    QPushButton *viewButton = new QPushButton("View");
+    connect(viewButton, &QPushButton::clicked, this, [this, activity] {
+        onViewButtonClicked(activity->getDate());
+    });
+    activityLayout->addWidget(viewButton);
+
+    QPushButton *mButton = new QPushButton("M");
+    mButton->setToolTip("Modify");
+    connect(mButton, &QPushButton::clicked, this, [this, index]() {
+        onModifyButtonClicked(index, tmp_search);
+    });
+    activityLayout->addWidget(mButton);
+
+    QPushButton *xButton = new QPushButton("X");
+    connect(xButton, &QPushButton::clicked, this, [this, index]() {
+        onDeleteButtonClicked(index, tmp_search);
+    });
+    activityLayout->addWidget(xButton);
+
+    return activityLayout;
+}
+
+QPushButton* ActivityRegister::uiCreateModifyButton() {
+    auto* modButton = new QPushButton("Modify", NewActivityDialog);
+    modButton->setGeometry(290, 10, 100, 30);
+    modButton->show();
+    return modButton;
 }

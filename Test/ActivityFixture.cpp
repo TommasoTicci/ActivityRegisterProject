@@ -66,3 +66,11 @@ TEST_F(ActivitySuite, TestModifyActivity) {
     ASSERT_THROW(activity.modifyActivity(description, newEndTime, newStartTime, newDate), std::invalid_argument);
     ASSERT_THROW(activity.modifyActivity(emptyDescription, newStartTime, newEndTime, newDate), std::invalid_argument);
 }
+
+TEST_F(ActivitySuite, TestIsEqual) {
+    Activity activity2("TestDescription", startTime, endTime, QDate(2023, 5, 12));
+    ASSERT_TRUE(activity.isEqual(activity2));
+    std::string newDescription = "NewDescription";
+    activity2.setDescription(newDescription);
+    ASSERT_FALSE(activity.isEqual(activity2));
+}

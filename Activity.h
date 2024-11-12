@@ -33,6 +33,8 @@ public:
 
     void modifyActivity(std::string &text, QTime &s_time, QTime &e_time, QDate &d);
 
+    bool isEqual(const Activity &activity) const;
+
 private:
     std::string description;
     QTime startTime;

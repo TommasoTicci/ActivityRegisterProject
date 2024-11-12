@@ -13,6 +13,7 @@
 #include <QDateEdit>
 #include <QScrollArea>
 #include <QLabel>
+#include <QVBoxLayout>
 
 class ActivityRegister : public QWidget {
 public:
@@ -39,9 +40,9 @@ public:
 private slots:
     void addActivity (const Activity& newActivity);
 
-    std::vector<Activity*> getSearchActivities(std::string &search);
+    std::vector<Activity*> getSearchActivities (std::string &search);
 
-    void onNewActivityButtonClicked();
+    void onNewActivityButtonClicked ();
 
     void refreshRegister ();
 
@@ -59,6 +60,10 @@ private slots:
 
     void onModifyButtonClicked (int index, std::string search);
 
+    void modifyButtonManager (std::vector<Activity>& dayActivities, int index);
+
+    void modifyButtonManager (std::vector<Activity*>& searchedActivity, int index, const std::string& search);
+
     void onDescriptionChanged (const QString &text);
 
     void onStartTimeChanged (QTime value);
@@ -72,6 +77,44 @@ private slots:
     void onViewButtonClicked (QDate date);
 
 private:
+
+    // ---- METODI UI ----
+
+    void uiInitializeMain ();
+
+    void uiSetUpRegisterConnections ();
+
+    void uiInitializeMaxActivitiesDialog();
+
+    void uiInitializeDialogWindow(const std::string& title, const std::string& description, QTime startTime, QTime endTime, QDate date, bool modify);
+
+    void uiSetUpSearchWindow(const std::vector<Activity*>& searchedActivity);
+
+    void uiCreateMsgBox (const std::string& title, const std::string& message);
+
+    void uiCreateNewActivityDialog (std::string title, int sizeX, int sizeY);
+
+    void uiCreateRegisterArea (int sizeX, int sizeY);
+
+    void uiCreateButton (const std::string &text, int x, int y, int sizeX, int sizeY, QWidget *parent, void (ActivityRegister::*slot)()) const;
+
+    void uiCreateTimeEdit (QTime time, int x, int y, int sizeX, int sizeY, QWidget *parent, void (ActivityRegister::*slot)(QTime)) const;
+
+    void uiCreateDataEdit (QDate date, int x, int y, int sizeX, int sizeY, QWidget *parent, void (ActivityRegister::*slot)(QDate)) const;
+
+    void uiCreateLineEdit (const std::string &text, int x, int y, int sizeX, int sizeY, QWidget *parent, void (ActivityRegister::*slot)(const QString &)) const;
+
+    void uiCreateLabel (const std::string &text, int x, int y, int sizeX, int sizeY, QWidget *parent) const;
+
+    void uiShowActivity (int index, const Activity &activity);
+
+    void uiShowSearchResults(QVBoxLayout *layout, const std::vector<Activity*> &activities);
+
+    QHBoxLayout* uiCreateSearchResultsLayout(Activity* activity, int index);
+
+    QPushButton* uiCreateModifyButton();
+
+private:
     std::map<QDate, std::vector<Activity>> activities;
     int maxActivitiesPerDay = 10;
     std::string tmp_description;
@@ -80,16 +123,9 @@ private:
     QDate tmp_date;
     std::string tmp_search;
     QDialog *NewActivityDialog = nullptr;
-    QDateEdit *registerDate;
-    QScrollArea *scrollRegisterArea;
-    QLineEdit *searchBar;
-    QLabel *programmerLabel;
-    QLabel *activityLabel= nullptr;
-    QLabel *timeLabel= nullptr;
-    QPushButton *addActivityButton;
-    QPushButton *searchButton;
-    QPushButton *deleteButton = nullptr;
-    QPushButton *modifyButton = nullptr;
+    QDateEdit *registerDate = nullptr;
+    QScrollArea *scrollRegisterArea = nullptr;
+    QLineEdit *searchBar = nullptr;
 };
 
 
